@@ -1,6 +1,5 @@
--- Add migration script here
 create table sessions (
-	id bigserial primary key,
-	user_id bigserial,
-	token varchar(128) unique not null
+    id integer primary key autoincrement,
+    user_id integer,
+    token text unique not null
 );
