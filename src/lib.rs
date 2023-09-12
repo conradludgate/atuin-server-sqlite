@@ -3,6 +3,7 @@ use atuin_server_database::{
     models::{History, NewHistory, NewSession, NewUser, Session, User},
     Database, DbError, DbResult,
 };
+use atuin_common::record::{EncryptedData, HostId, Record, RecordId, RecordIndex};
 use futures_util::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use sqlx::{
@@ -133,7 +134,7 @@ impl Database for Sqlite {
         )
         .bind(user.id)
         .bind(id)
-        .bind(chrono::Utc::now().naive_utc())
+        .bind(time::OffsetDateTime::now_utc())
         .fetch_all(&self.pool)
         .await
         .map_err(fix_error)?;
@@ -166,8 +167,8 @@ impl Database for Sqlite {
     async fn count_history_range(
         &self,
         user: &User,
-        start: chrono::NaiveDateTime,
-        end: chrono::NaiveDateTime,
+        start: time::PrimitiveDateTime,
+        end: time::PrimitiveDateTime,
     ) -> DbResult<i64> {
         let res: (i64,) = sqlx::query_as(
             "select count(1) from history
@@ -189,8 +190,8 @@ impl Database for Sqlite {
     async fn list_history(
         &self,
         user: &User,
-        created_after: chrono::NaiveDateTime,
-        since: chrono::NaiveDateTime,
+        created_after: time::OffsetDateTime,
+        since: time::OffsetDateTime,
         host: &str,
         page_size: i64,
     ) -> DbResult<Vec<History>> {
@@ -238,7 +239,7 @@ impl Database for Sqlite {
             .bind(hostname)
             .bind(i.timestamp)
             .bind(data)
-            .execute(&mut tx)
+            .execute(&mut *tx)
             .await
             .map_err(fix_error)?;
         }
@@ -335,4 +336,25 @@ impl Database for Sqlite {
         .map_err(fix_error)
         .map(|DbHistory(h)| h)
     }
+
+	async fn total_history(&self) -> DbResult<i64> {
+		Ok(1)
+	}
+	async fn add_records(&self, user: &User, records: &[Record<EncryptedData>]) -> Result<(), DbError> {
+		Ok(())
+	}
+	async fn next_records(
+		&self,
+        user: &User,
+        host: HostId,
+        tag: String,
+        start: Option<RecordId>,
+        count: u64,
+	) -> DbResult<Vec<Record<EncryptedData>>> {
+		Err(DbError::NotFound)
+	}
+	async fn tail_records(&self, user: &User) -> DbResult<RecordIndex> {
+		Err(DbError::NotFound)
+	}
+
 }
