@@ -18,7 +18,7 @@ async fn main() {
     let settings = atuin_server::Settings::new().unwrap();
     let host = settings.host.clone();
     let port = settings.port;
-    atuin_server::launch::<Sqlite>(settings, host, port)
+    atuin_server::launch::<Sqlite>(settings, &host, port)
         .await
         .unwrap();
 }
