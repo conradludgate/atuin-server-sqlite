@@ -10,9 +10,9 @@ use sqlx::{
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions},
     Row,
 };
-use std::str::FromStr;
+use std::{str::FromStr, ops::Range};
 use tracing::instrument;
-
+use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 use wrappers::{DbHistory, DbSession, DbUser, DbRecord};
 
 mod wrappers;
@@ -167,8 +167,7 @@ impl Database for Sqlite {
     async fn count_history_range(
         &self,
         user: &User,
-        start: time::PrimitiveDateTime,
-        end: time::PrimitiveDateTime,
+        range: Range<OffsetDateTime>,
     ) -> DbResult<i64> {
         let res: (i64,) = sqlx::query_as(
             "select count(1) from history
@@ -177,8 +176,8 @@ impl Database for Sqlite {
             and timestamp < $3::date",
         )
         .bind(user.id)
-        .bind(start)
-        .bind(end)
+        .bind(into_utc(range.start))
+        .bind(into_utc(range.end))
         .fetch_one(&self.pool)
         .await
         .map_err(fix_error)?;
@@ -441,4 +440,9 @@ impl Database for Sqlite {
         Ok(res)
 	}
 
+}
+
+fn into_utc(x: OffsetDateTime) -> PrimitiveDateTime {
+    let x = x.to_offset(UtcOffset::UTC);
+    PrimitiveDateTime::new(x.date(), x.time())
 }

@@ -1,15 +1,15 @@
 [package]
 name = "atuin-server-sqlite-unofficial"
-version = "16.0.0"
+version = "17.0.0"
 edition = "2021"
 description = "unofficial server sqlite database library for atuin"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-atuin-common = { git = "https://github.com/ellie/atuin", version = "16.0.0" }
-atuin-server = { git = "https://github.com/ellie/atuin", version = "16.0.0" }
-atuin-server-database = { git = "https://github.com/ellie/atuin", version = "16.0.0" }
+atuin-common = { git = "https://github.com/ellie/atuin", version = "17.0.0" }
+atuin-server = { git = "https://github.com/ellie/atuin", version = "17.0.0" }
+atuin-server-database = { git = "https://github.com/ellie/atuin", version = "17.0.0" }
 
 tracing = "0.1"
 time = { version = "0.3", features = ["serde-human-readable", "macros", "local-offset"] }
