@@ -1,5 +1,5 @@
-use atuin_common::record::{Record, EncryptedData};
 use ::sqlx::{FromRow, Result};
+use atuin_common::record::{EncryptedData, Host, Record};
 use atuin_server_database::models::{History, Session, User};
 use sqlx::{sqlite::SqliteRow, Row};
 
@@ -45,6 +45,7 @@ impl<'a> ::sqlx::FromRow<'a, SqliteRow> for DbHistory {
 
 impl<'a> ::sqlx::FromRow<'a, SqliteRow> for DbRecord {
     fn from_row(row: &'a SqliteRow) -> ::sqlx::Result<Self> {
+        let idx: i64 = row.try_get("idx")?;
         let timestamp: i64 = row.try_get("timestamp")?;
 
         let data = EncryptedData {
@@ -54,8 +55,8 @@ impl<'a> ::sqlx::FromRow<'a, SqliteRow> for DbRecord {
 
         Ok(Self(Record {
             id: row.try_get("client_id")?,
-            host: row.try_get("host")?,
-            parent: row.try_get("parent")?,
+            host: Host::new(row.try_get("host")?),
+            idx: idx as u64,
             timestamp: timestamp as u64,
             version: row.try_get("version")?,
             tag: row.try_get("tag")?,

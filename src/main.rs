@@ -1,4 +1,5 @@
 use atuin_server_sqlite_unofficial::Sqlite;
+use tokio::net::lookup_host;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[tokio::main]
@@ -16,9 +17,13 @@ async fn main() {
         .init();
 
     let settings = atuin_server::Settings::new().unwrap();
-    let host = settings.host.clone();
-    let port = settings.port;
-    atuin_server::launch::<Sqlite>(settings, &host, port)
+    let addr = lookup_host((&*settings.host, settings.port))
+        .await
+        .expect("listen addr should be valid")
+        .next()
+        .expect("listen addr should be valid");
+
+    atuin_server::launch::<Sqlite>(settings, addr)
         .await
         .unwrap();
 }
